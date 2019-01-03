@@ -1,0 +1,9 @@
+name: SchematicPlots
+main: jasonwynn10\SchematicPlots\Main
+version: 0.1.0
+api: 3.0.0
+author: "jasonwynn10"
+description: "A world generator which works by using square schematics as a template"
+load: STARTUP
+softdepend:
+- DEVirion
