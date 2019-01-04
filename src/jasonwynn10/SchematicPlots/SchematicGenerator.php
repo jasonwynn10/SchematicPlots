@@ -6,31 +6,53 @@
  * Time: 1:55 PM
  */
 namespace jasonwynn10\SchematicPlots;
+
+use BlockHorizons\libschematic\Schematic;
 use pocketmine\level\generator\Generator;
 use pocketmine\math\Vector3;
 
 class SchematicGenerator extends Generator {
+	private $settings;
+
 	public function __construct(array $settings = []) {
-		parent::__construct($settings);
+		if(isset($settings["preset"])) {
+			$settings = json_decode($settings["preset"], true);
+			if($settings === false or is_null($settings)) {
+				$settings = [];
+			}
+		}else{
+			$settings = [];
+		}
+		// TODO: get schematic block data
+		$schematic = new Schematic($settings["location"] ?? "");
+		$blocks = $schematic->decodeBlocks($settings["blocks"],$settings["meta"],$settings["height"], $settings["width"],$settings["length"]);
 	}
 
 	public function generateChunk(int $chunkX, int $chunkZ) : void {
-		// TODO: Implement generateChunk() method.
+		// TODO: replicate pattern without chunks resetting it
 	}
 
-	public function populateChunk(int $chunkX, int $chunkZ) : void {
-		// TODO: Implement populateChunk() method.
-	}
+	public function populateChunk(int $chunkX, int $chunkZ) : void {}
 
-	public function getSettings() : array {
-		// TODO: Implement getSettings() method.
-	}
-
+	/**
+	 * @return string
+	 */
 	public function getName() : string {
-		// TODO: Implement getName() method.
+		return "SchematicGenerator";
 	}
 
+	/**
+	 * @return string[]
+	 */
+	public function getSettings() : array {
+		return $this->settings;
+	}
+
+	/**
+	 * @return Vector3
+	 */
 	public function getSpawn() : Vector3 {
-		// TODO: Implement getSpawn() method.
+		// TODO: 0,0 at 1 above schematic height
+		return new Vector3(0, 0, 0);
 	}
 }
