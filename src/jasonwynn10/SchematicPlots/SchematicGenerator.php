@@ -12,20 +12,22 @@ use pocketmine\level\generator\Generator;
 use pocketmine\math\Vector3;
 
 class SchematicGenerator extends Generator {
-	private $settings;
+	private $settings = [];
+	private $blocks = [];
+	private $length = 0;
+	private $width = 0;
 
 	public function __construct(array $settings = []) {
 		if(isset($settings["preset"])) {
 			$settings = json_decode($settings["preset"], true);
-			if($settings === false or is_null($settings)) {
-				$settings = [];
-			}
-		}else{
-			$settings = [];
 		}
-		// TODO: get schematic block data
-		$schematic = new Schematic($settings["location"] ?? "");
-		$blocks = $schematic->decodeBlocks($settings["blocks"],$settings["meta"],$settings["height"], $settings["width"],$settings["length"]);
+		$this->settings = $settings;
+		$schematic = new Schematic($settings["file"] ?? "");
+		$schematic->decode();
+		$schematic->fixBlockIds();
+		$this->blocks = $schematic->getBlocks();
+		$this->length = $schematic->getLength();
+		$this->width = $schematic->getWidth();
 	}
 
 	public function generateChunk(int $chunkX, int $chunkZ) : void {
@@ -52,7 +54,6 @@ class SchematicGenerator extends Generator {
 	 * @return Vector3
 	 */
 	public function getSpawn() : Vector3 {
-		// TODO: 0,0 at 1 above schematic height
-		return new Vector3(0, 0, 0);
+		return new Vector3(0, $this->settings["height"] + 1, 0);
 	}
 }

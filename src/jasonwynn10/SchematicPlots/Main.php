@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace jasonwynn10\SchematicPlots;
 
+use BlockHorizons\libschematic\Schematic;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\level\generator\GeneratorManager;
@@ -21,6 +22,7 @@ class Main extends PluginBase {
 
 	public function onLoad() : void {
 		$this->saveDefaultConfig();
+		$this->saveResource("new.schematic");
 		self::$instance = $this;
 		$this->getLogger()->debug(TextFormat::BOLD . "Loading MyPlot Generator");
 		GeneratorManager::addGenerator(SchematicGenerator::class, "SchematicPlots", true);
@@ -30,7 +32,19 @@ class Main extends PluginBase {
 		if($this->isDisabled()) {
 			return;
 		}
-		$this->getServer()->getCommandMap()->register("SchematicPlots", new class extends Command {
+		$this->getServer()->getCommandMap()->register("SchematicPlots", new class($this) extends Command {
+			private $plugin;
+			/**
+			 *  constructor.
+			 *
+			 * @param Main $plugin
+			 */
+			public function __construct(Main $plugin) {
+				$this->plugin = $plugin;
+				parent::__construct("/genschem", "generates a world based on a square schematic", "/genschem <file: string>", ["gs"]);
+				$this->setPermission("genschem");
+			}
+
 			/**
 			 * @param CommandSender $sender
 			 * @param string $commandLabel
@@ -39,7 +53,22 @@ class Main extends PluginBase {
 			 * @return mixed
 			 */
 			public function execute(CommandSender $sender, string $commandLabel, array $args) {
-				// TODO: Implement execute() method.
+				if(empty($args))
+					return false;
+				if($this->testPermission($sender)) {
+					$schem = new Schematic($this->plugin->getDataFolder().$args[0].".schematic");
+					$schem->decodeSizes();
+					if($schem->getLength() !== $schem->getWidth()) {
+						$sender->sendMessage("That schematic is not square!");
+						return true;
+					}
+					$options = [];
+					$options["file"] = $this->plugin->getDataFolder().$args[0].".schematic";
+					$options["preset"] = json_encode($options);
+					$this->plugin->getServer()->generateLevel($args[0], null, "SchematicGenerator", $options);
+					$sender->sendMessage("world '" . $args[0] ."' has been generated.");
+				}
+				return true;
 			}
 		});
 	}
