@@ -22,7 +22,7 @@ class Main extends PluginBase {
 
 	public function onLoad() : void {
 		$this->saveDefaultConfig();
-		$this->saveResource("new.schematic");
+		$this->saveResource("blank.schematic");
 		self::$instance = $this;
 		$this->getLogger()->debug(TextFormat::BOLD . "Loading MyPlot Generator");
 		GeneratorManager::addGenerator(SchematicGenerator::class, "SchematicPlots", true);
@@ -50,9 +50,9 @@ class Main extends PluginBase {
 			 * @param string $commandLabel
 			 * @param string[] $args
 			 *
-			 * @return mixed
+			 * @return bool
 			 */
-			public function execute(CommandSender $sender, string $commandLabel, array $args) {
+			public function execute(CommandSender $sender, string $commandLabel, array $args) : bool {
 				if(empty($args))
 					return false;
 				if($this->testPermission($sender)) {
@@ -64,6 +64,7 @@ class Main extends PluginBase {
 					}
 					$options = [];
 					$options["file"] = $this->plugin->getDataFolder().$args[0].".schematic";
+					$options["blank"] = $this->plugin->getDataFolder()."new.schematic";
 					$options["preset"] = json_encode($options);
 					$this->plugin->getServer()->generateLevel($args[0], null, "SchematicGenerator", $options);
 					$sender->sendMessage("world '" . $args[0] ."' has been generated.");
